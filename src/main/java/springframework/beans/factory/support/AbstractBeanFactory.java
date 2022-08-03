@@ -14,6 +14,15 @@ import springframework.beans.factory.config.DefaultSingletonBeanRegistry;
 public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory {
     @Override
     public Object getBean(String name) throws BeansException {
+        return  doGetBean(name,null);
+    }
+
+    @Override
+    public Object getBean(String name,Object... args) throws BeansException {
+        return  doGetBean(name,args);
+    }
+
+    protected Object doGetBean(String name,Object[] args){
         Object bean = getSingleton(name);
         if(bean!=null){
             return bean;
@@ -21,12 +30,12 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
 
         //不存在 进行创建
         BeanDefinition beanDefinition = getBeanDefinition(name);
-        return  creatBean(name,beanDefinition);
+        return  creatBean(name,beanDefinition,args);
     }
 
     protected  abstract BeanDefinition getBeanDefinition(String beanName) throws BeansException;
 
-    protected  abstract Object creatBean(String beanName, BeanDefinition beanDefinition) throws BeansException;
+    protected  abstract Object creatBean(String beanName, BeanDefinition beanDefinition,Object[] args) throws BeansException;
 
 
 }

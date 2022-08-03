@@ -1,5 +1,6 @@
 package springframework.beans.factory;
 
+import springframework.beans.BeansException;
 import springframework.beans.factory.config.BeanDefinition;
 
 /**
@@ -8,8 +9,21 @@ import springframework.beans.factory.config.BeanDefinition;
  */
 public interface BeanFactory {
 
-    public Object getBean(String name);
+    /**
+     * 无参
+     * @param name
+     * @return Bean对象
+     * @throws BeansException
+     */
+    Object getBean(String name) throws BeansException;
 
-
+    /**
+     * 有参
+     * @param name
+     * @param args  构造参数
+     * @return
+     * @throws BeansException
+     */
+    Object getBean(String name, Object... args) throws BeansException;
 
 }
