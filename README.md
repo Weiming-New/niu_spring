@@ -1,4 +1,4 @@
-# 基于Cglib实现含构造函数的类实例化策略
+# 为Bean对象注入属性和依赖Bean的功能实现
 
 niu spring
 
@@ -6,27 +6,24 @@ niu spring
 
 ### 一 目标
 
-- 实例化对象的代码里并没有考虑对象类是否含构造函数，也就是说如果去实例化一个含有构造函数的对象那么就要抛异常了
+- 缺少一个关于`类中是否有属性的问题`，如果有类中包含属性那么在实例化的时候就需要把属性信息填充上，这样才是一个完整的对象创建。
 
-  ![image-20220802134047231](C:\Users\niu\AppData\Roaming\Typora\typora-user-images\image-20220802134047231.png)
-
-![image-20220802134026042](C:\Users\niu\AppData\Roaming\Typora\typora-user-images\image-20220802134026042.png)
-
-发生这一现象的主要原因就是因为 `beanDefinition.getBeanClass().newInstance();` 实例化方式并没有考虑构造函数的入参，那么就要解决这个问题。
 
 ### 二 设计
 
-##### 问题：1.流程从哪合理的把构造函数的入参信息传递到实例化操作
-
-##### 			2.怎么去实例化含有构造函数的对象
+可以在类 `AbstractAutowireCapableBeanFactory` 的 createBean 方法中添加补全属性方法
 
 ##### 1.
 
-参考 Spring Bean 容器源码的实现方式，在 BeanFactory 中添加 `Object getBean(String name, Object... args)` 接口，这样就可以在获取 Bean 时把构造函数的入参信息传递进去了。
+属性填充要在类实例化创建之后，也就是需要在 `AbstractAutowireCapableBeanFactory` 的 createBean 方法中添加 `applyPropertyValues` 操作。
 
 ##### 2.
 
-另外一个核心的内容是使用什么方式来创建含有构造函数的 Bean 对象呢？这里有两种方式可以选择，一个是基于 Java 本身自带的方法 `DeclaredConstructor`，另外一个是使用 Cglib 来动态创建 Bean 对象
+由于我们需要在创建Bean时候填充属性操作，那么就需要在 bean 定义 BeanDefinition 类中，添加 PropertyValues 信息。
+
+##### 3.
+
+另外是填充属性信息还包括了 Bean 的对象类型，也就是需要再定义一个 BeanReference，里面其实就是一个简单的 Bean 名称，在具体的实例化操作时进行递归创建和填充，与 Spring 源码实现一样。
 
 
 

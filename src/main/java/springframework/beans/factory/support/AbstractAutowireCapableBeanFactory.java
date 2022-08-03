@@ -1,7 +1,11 @@
 package springframework.beans.factory.support;
 
+import cn.hutool.core.bean.BeanUtil;
 import springframework.beans.BeansException;
+import springframework.beans.PropertyValue;
+import springframework.beans.PropertyValues;
 import springframework.beans.factory.config.BeanDefinition;
+import springframework.beans.factory.config.BeanReference;
 
 import java.lang.reflect.Constructor;
 
@@ -24,6 +28,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         Object bean = null;
         try{
             bean = createBeanInstance(beanDefinition,beanName,args);
+            applyPropertyValues(beanName, bean, beanDefinition);
         }catch (Exception e){
             throw new BeansException("Instantiation of bean failed",e);
         }
@@ -52,6 +57,32 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         return getInstantiationStrategy().instantiate(beanDefinition,beanName,constructorToUse,args);
     }
 
+    /**
+     *  bean属性填充
+     * @param beanName
+     * @param bean
+     * @param beanDefinition
+     */
+    protected void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) {
+        try {
+            PropertyValues propertyValues = beanDefinition.getPropertyValues();
+            for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
+
+                String propertyName = propertyValue.getName();
+                Object value = propertyValue.getValue();
+
+                if (value instanceof BeanReference) {
+                    // A 依赖 B，获取 B 的实例化
+                    BeanReference beanReference = (BeanReference) value;
+                    value = getBean(beanReference.getBeanName());
+                }
+                // 属性填充
+                BeanUtil.setFieldValue(bean, propertyName, value);
+            }
+        } catch (Exception e) {
+            throw new BeansException("Error setting property values：" + beanName);
+        }
+    }
 
     public InstantiationStrategy getInstantiationStrategy() {
         return instantiationStrategy;
