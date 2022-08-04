@@ -1,6 +1,5 @@
 package springframework.beans.factory.support;
 
-import springframework.beans.factory.config.BeanDefinitionRegistry;
 import springframework.core.io.DefaultResourceLoader;
 import springframework.core.io.ResourceLoader;
 

@@ -8,7 +8,7 @@ import org.w3c.dom.NodeList;
 import springframework.beans.BeansException;
 import springframework.beans.PropertyValue;
 import springframework.beans.factory.config.BeanDefinition;
-import springframework.beans.factory.config.BeanDefinitionRegistry;
+import springframework.beans.factory.support.BeanDefinitionRegistry;
 import springframework.beans.factory.config.BeanReference;
 import springframework.beans.factory.support.AbstractBeanDefinitionReader;
 import springframework.core.io.Resource;
@@ -55,6 +55,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
         ResourceLoader resourceLoader = getResourceLoader();
         Resource resource = resourceLoader.getResource(location);
         loadBeanDefinitions(resource);
+    }
+
+    @Override
+    public void loadBeanDefinitions(String... locations) throws BeansException {
+        for (String location : locations) {
+            loadBeanDefinitions(location);
+        }
     }
 
     protected void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {

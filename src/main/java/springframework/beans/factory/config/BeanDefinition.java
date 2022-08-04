@@ -3,6 +3,7 @@ package springframework.beans.factory.config;
 import springframework.beans.PropertyValues;
 
 /**
+ * Bean定义类 包含bean的类型 属性
  * @author niu
  */
 public class BeanDefinition {

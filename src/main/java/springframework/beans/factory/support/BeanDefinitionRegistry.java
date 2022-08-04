@@ -1,6 +1,7 @@
-package springframework.beans.factory.config;
+package springframework.beans.factory.support;
 
 import springframework.beans.BeansException;
+import springframework.beans.factory.config.BeanDefinition;
 
 public interface BeanDefinitionRegistry {
     /**

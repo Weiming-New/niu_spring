@@ -1,4 +1,4 @@
-# 设计与实现资源加载器，从Spring.xml解析和注册Bean对象
+# 实现应用上下文，自动识别、资源加载、扩展机制
 
 niu spring
 
@@ -6,9 +6,8 @@ niu spring
 
 ### 一 目标
 
-- 实际使用这个 Spring 框架，是不太可能让用户通过手动方式创建的，而是最好能通过配置文件的方式简化创建过程。
-- 注册、设置属性、属性注入整合到Spring框架中，通过 Spring 配置文件的方式将 Bean 对象实例化。
-- 在现有的 Spring 框架中，添加能解决 Spring 配置的读取、解析、注册Bean的操作。
+- DefaultListableBeanFactory、XmlBeanDefinitionReader，是我们在目前 Spring 框架中对于服务功能测试的使用方式，它能很好的体现出 Spring 是如何对 xml 加载以及注册Bean对象的操作过程，但这种方式是面向 Spring 本身的，还不具备一定的扩展性。
+- 就像我们现在需要提供出一个可以在 Bean 初始化过程中，完成对 Bean 对象的扩展时，就很难做到自动化处理。所以我们要把 Bean 对象扩展机制功能和对 Spring 框架上下文的包装融合起来，对外提供完整的服务。
 
 
 ### 二 设计
@@ -17,22 +16,25 @@ niu spring
 
 ##### 1.
 
-资源加载器属于相对独立的部分，它位于 Spring 框架核心包下的IO实现内容，主要用于处理Class、本地和云环境中的文件信息。
+满足于对 Bean 对象扩展的两个接口，其实也是 Spring 框架中非常具有重量级的两个接口：`BeanFactoryPostProcess` 和 `BeanPostProcessor`，也几乎是大家在使用 Spring 框架额外新增开发自己组建需求的两个必备接口。
 
 ##### 2.
 
-当资源可以加载后，接下来就是解析和注册 Bean 到 Spring 中的操作，这部分实现需要和 DefaultListableBeanFactory 核心类结合起来，因为你所有的解析后的注册动作，都会把 Bean 定义信息放入到这个类中。
+BeanFactoryPostProcessor，是由 Spring 框架组建提供的容器扩展机制，允许在 Bean 对象注册后但未实例化之前，对 Bean 的定义信息 `BeanDefinition` 执行修改操作。
 
 ##### 3.
 
-那么在实现的时候就设计好接口的实现层级关系，包括我们需要定义出 Bean 定义的读取接口 `BeanDefinitionReader` 以及做好对应的实现类，在实现类中完成对 Bean 对象的解析和注册。
+BeanPostProcessor，也是 Spring 提供的扩展机制，不过 BeanPostProcessor 是在 Bean 对象实例化之后修改 Bean 对象，也可以替换 Bean 对象。这部分与后面要实现的 AOP 有着密切的关系。
+
+##### 4.
+
+同时如果只是添加这两个接口，不做任何包装，那么对于使用者来说还是非常麻烦的。我们希望于开发 Spring 的上下文操作类，把相应的 XML 加载 、注册、实例化以及新增的修改和扩展都融合进去，让 Spring 可以自动扫描到我们的新增服务，便于用户使用。
 
 
 
 #### 问题记载
 
-Unable to make protected final java.lang.Class java.lang.ClassLoader.defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain) throws java.lang.ClassFormatError accessible: module java.base does not “opens java.lang” to unnamed module
+bean实例化时的改变失败
 
-解决方案： JDK8的反射相关功能被限制 9+版本 在 “Edit Configurations” 中 ——> “VM options” 输入框中输入 `--add-opens java.base/java.lang=ALL-UNNAMED` 选项来开启
+原因：未在AbstractAutowireCapableBeanFactory的creatBean中添加对应改变方法
 
-![image-20220803154316732](C:\Users\niu\AppData\Roaming\Typora\typora-user-images\image-20220803154316732.png)
