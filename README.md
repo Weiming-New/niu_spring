@@ -1,4 +1,4 @@
-# 为Bean对象注入属性和依赖Bean的功能实现
+# 设计与实现资源加载器，从Spring.xml解析和注册Bean对象
 
 niu spring
 
@@ -6,24 +6,26 @@ niu spring
 
 ### 一 目标
 
-- 缺少一个关于`类中是否有属性的问题`，如果有类中包含属性那么在实例化的时候就需要把属性信息填充上，这样才是一个完整的对象创建。
+- 实际使用这个 Spring 框架，是不太可能让用户通过手动方式创建的，而是最好能通过配置文件的方式简化创建过程。
+- 注册、设置属性、属性注入整合到Spring框架中，通过 Spring 配置文件的方式将 Bean 对象实例化。
+- 在现有的 Spring 框架中，添加能解决 Spring 配置的读取、解析、注册Bean的操作。
 
 
 ### 二 设计
 
-可以在类 `AbstractAutowireCapableBeanFactory` 的 createBean 方法中添加补全属性方法
+在现有的 Spring 框架雏形中添加一个资源解析器，也就是能读取classpath、本地文件和云文件的配置内容。这些配置内容就是像使用 Spring 时配置的 Spring.xml 一样，里面会包括 Bean 对象的描述和属性信息。在读取配置文件信息后，接下来就是对配置文件中的 Bean 描述信息解析后进行注册操作，把 Bean 对象注册到 Spring 容器中。
 
 ##### 1.
 
-属性填充要在类实例化创建之后，也就是需要在 `AbstractAutowireCapableBeanFactory` 的 createBean 方法中添加 `applyPropertyValues` 操作。
+资源加载器属于相对独立的部分，它位于 Spring 框架核心包下的IO实现内容，主要用于处理Class、本地和云环境中的文件信息。
 
 ##### 2.
 
-由于我们需要在创建Bean时候填充属性操作，那么就需要在 bean 定义 BeanDefinition 类中，添加 PropertyValues 信息。
+当资源可以加载后，接下来就是解析和注册 Bean 到 Spring 中的操作，这部分实现需要和 DefaultListableBeanFactory 核心类结合起来，因为你所有的解析后的注册动作，都会把 Bean 定义信息放入到这个类中。
 
 ##### 3.
 
-另外是填充属性信息还包括了 Bean 的对象类型，也就是需要再定义一个 BeanReference，里面其实就是一个简单的 Bean 名称，在具体的实例化操作时进行递归创建和填充，与 Spring 源码实现一样。
+那么在实现的时候就设计好接口的实现层级关系，包括我们需要定义出 Bean 定义的读取接口 `BeanDefinitionReader` 以及做好对应的实现类，在实现类中完成对 Bean 对象的解析和注册。
 
 
 
